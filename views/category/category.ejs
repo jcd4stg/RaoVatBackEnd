@@ -1,0 +1,226 @@
+<script>
+    var url = "http://localhost:3000";
+
+    $(document).ready(function() {
+
+        $.post(url + "/category", (data) => {
+            if (data.kq == 1) {
+                                
+                $("#list_Cate").html("");
+                                
+                data.cateList.forEach(cate => {
+                                    
+                    $("#list_Cate").append(
+                                        
+                    `<li class="cate" srcHinh="` + cate.image + `" idCate="` + cate._id + `">` + cate.name + `</li>`
+                                    
+                    );
+                                
+                });
+
+            }
+        });
+
+    // bắt event khi user upload file lên
+        $("#hinhSanPham").change(function() {
+            var data = new FormData();
+            jQuery.each(jQuery("#hinhSanPham")[0].files, function(i, file) {
+                console.log("hinhdaidien");
+                data.append("hinhdaidien", file);
+                
+            });
+
+            jQuery.ajax({
+               url: url + "/uploadFile",
+               data: data,
+               cache: false,
+               contentType: false,
+               processData: false,
+               method: "POST",
+               type: "POST", 
+               success: (data) => {
+                
+                    if (data.kq == 1) {
+                        console.log(data);
+                        
+                        $("#cateImage").attr("src", url + "/upload/" + data.urlFile.filename);
+                        $("#file_ImageCate").val(data.urlFile.filename);
+                    } else {
+                        console.log("Upload fail");
+                    }
+                }
+            });
+        });
+
+
+
+        $("#btn_AddNewCate").click(() => {
+            if ($("#file_ImageCate").val().length == 0 || $("#cateName").val().length == 0) {
+                alert("Vui long nhap Name & chon Hinh");
+            } else {
+                $.post(url + "/category/addNew", {
+                    name: $("#cateName").val(),
+                    image: $("#file_ImageCate").val()
+                }, (data) => {
+                    if (data.kq == 1) {
+                        $("#cateImage").attr("src", "");
+                        $("#cateName").val("");
+                    
+                        $.post(url + "/category", (data) => {
+                            $("#list_Cate").html("");
+                            if (data.kq == 1) {
+                                data.cateList.forEach(cate => {
+                                    $("#list_Cate").append(
+                                        `<li class="cate" srcHinh="` + cate.image + `" idCate="` + cate._id + `">` + cate.name + `</li>`
+                                    )
+                                });
+
+                            }
+                        });
+
+                    } else {
+                    console.log("bad");
+                    }
+                });
+            }
+            
+        });
+
+        $(document).on("click", ".cate", function() {
+
+            var srcHinh = $(this).attr("srcHinh");
+            var hinhSrcUrl = url + "/upload/" + srcHinh;
+
+            var nameCate = $(this).html();
+            var id = $(this).attr("idCate");
+
+            $("#cateDetail").attr("src", hinhSrcUrl);
+            $("#cateName_Detail").val(nameCate);
+            $("#file_ImageCate_Detail").val(srcHinh);
+            $("#idCateDetail").val(id); 
+        });
+
+        $("#hinhSanPham_Detail").change(function() {
+            var data = new FormData();
+            jQuery.each(jQuery("#hinhSanPham_Detail")[0].files, function(i, file) {
+                data.append("hinhdaidien", file);
+                
+            });
+
+            jQuery.ajax({
+               url: url + "/uploadFile",
+               data: data,
+               cache: false,
+               contentType: false,
+               processData: false,
+               method: "POST",
+               type: "POST", 
+               success: (data) => {
+                
+                    if (data.kq == 1) {
+                        console.log(data);
+                        $("#cateDetail").attr("src", url + "/upload/" + data.urlFile.filename);
+                        $("#file_ImageCate_Detail").val(data.urlFile.filename);
+                    } else {
+                        console.log("Upload fail");
+                    }
+                }
+            });
+        });
+
+        $("#btn_UpdateCate").click(() => {
+            $.post(url + "/category/update", {
+                _id: $("#idCateDetail").val(),
+                name: $("#cateName_Detail").val(),
+                image: $("#file_ImageCate_Detail").val()
+            }, (data) => {
+                if (data.kq == 1) {
+                    $("#cateDetail").attr("src", "");
+                    $("#cateName_Detail").val("");
+
+                    $.post(url + "/category", (data) => {
+                        if (data.kq == 1) {
+                                
+                            $("#list_Cate").html("");
+                                
+                            data.cateList.forEach(cate => {
+                                    
+                                $("#list_Cate").append(
+                                        
+                                    `<li class="cate" srcHinh="` + cate.image + `" idCate="` + cate._id + `">` + cate.name + `</li>`
+                                    
+                                )
+                                
+                            });
+
+                        }
+                    });
+
+                }
+            })
+        });
+
+        $("#btn_DeleteCate").click(() => {
+            var choose = confirm("Are your sure to delete?");
+            if (choose) {
+                $.post(url + "/category/delete", {
+                        _id: $("#idCateDetail").val()
+                }, (data) => {
+                    if (data.kq == 1) {
+                        $("#cateName_Detail").val("");
+                        $("#cateDetail").attr("src", "");
+                     
+                        $.post(url + "/category", (data) => {
+                            if (data.kq == 1) {
+            
+                                $("#list_Cate").html("");
+            
+                                data.cateList.forEach(cate => {
+                
+                                    $("#list_Cate").append(
+                    
+                                        `<li class="cate" srcHinh="` + cate.image + `" idCate="` + cate._id + `">` + cate.name + `</li>`
+                
+                                    )
+            
+                                });
+
+                            }
+                        });
+
+                    } else {
+                        alert("Delete cate failed: " + data.errMsg);
+                    }
+                });
+            }
+
+        });
+
+    });
+
+</script>
+
+<div id="form_AddNewCate">
+    <img id="cateImage" src="" width="100px" /> <br>
+    <input type="file" id="hinhSanPham" /> <br/>
+    <input type="text" id="cateName" placeholder="Category name"/> <br/>
+    <input type="button" id="btn_AddNewCate" value="Add new" />
+    <input type="hidden" id="file_ImageCate" />
+
+</div>
+
+<ul id="list_Cate"></ul>
+
+<div id="form_UpdateCate">
+    <img id="cateDetail" src="" width="100px" /> <br>
+    <input type="file" id="hinhSanPham_Detail" /> <br/>
+    <input type="text" id="cateName_Detail" /> <br/>
+    <input type="button" id="btn_UpdateCate" value="Update" />
+    <input type="button" id="btn_DeleteCate" value="Delete" />
+    <input type="hidden" id="file_ImageCate_Detail" />
+    <input type="hidden" id="idCateDetail" />
+
+</div>
+
+
+

@@ -1,0 +1,143 @@
+<script>
+
+    var url = "http://localhost:3000";
+
+    $(document).ready(() => {
+
+        $.post(url +"/city", (data2) => {
+            
+            console.log(data2)
+                    
+            if(data2.kq == 1) {
+                        
+                $("#city_List").html("");
+                        
+                data2.list.forEach(city => {
+                            
+                    $("#city_List").append(
+                                
+                    `<li class="city" cityID="`+ city._id + `">` + city.name +`</li>`
+                            
+                    );
+                        
+                });
+                    
+            }
+                
+        });
+
+        // data trả về (ajax trả về)
+        
+        
+    $(document).on("click", ".city", function() {
+        var ten = $(this).html();
+            
+        var _id = $(this).attr("cityID");
+            
+        $("#cityName_Update").val( ten );
+            
+        $("#hidden_cityID").val(_id);
+    });
+
+    $("#btn_UpdateCity").click(function() {
+        $.post(url + "/city/update", {
+
+            _id:$("#hidden_cityID").val(),
+
+            name: $("#cityName_Update").val()
+        
+        }, function(data) {
+        
+            if (data.kq == 1) {
+                $.post(url +"/city", (data2) => {
+            
+                    console.log(data2)
+                    
+                    if(data2.kq == 1) {
+                        
+                        $("#city_List").html("");
+                        
+                        data2.list.forEach(city => {
+                            
+                        
+                            $("#city_List").append(
+                                
+                                `<li class="city" cityID="`+ city._id + `">` + city.name +`</li>`
+                            
+                            );
+                        
+                        });
+                
+                    }
+                
+                });
+                
+            }
+            
+        });
+        
+        
+    });
+
+
+
+    $("#btn_DeleteCity").click(function() {
+        var choose = confirm("Are you sure to delete?");
+        if (choose) {
+            $.post(url + "/city/delete", {
+            _id:$("#hidden_cityID").val(),
+            
+            }, function(data) {
+
+                if (data.kq == 1) {
+                    $("#cityName_Update").val("");
+                    $.post(url +"/city", (data2) => {                    
+                        if(data2.kq == 1) {
+                        
+                            $("#city_List").html("");
+                        
+                            data2.list.forEach(city => {
+                            
+                                $("#city_List").append(
+                                
+                                    `<li class="city" cityID="`+ city._id + `">` + city.name +`</li>`
+                            
+                                );
+                        
+                            });
+                    
+                        }
+                
+                    });
+                
+                }
+            
+            });
+        
+        }
+
+    });    
+});
+</script>
+
+
+<div id="city_FormAddNew">
+    <input type="text" id="cityName" placeholder="Ten Thanh pho" />
+    <input type="button" id="btn_AddNewCity" value="Add new" />
+</div>
+
+<ul id="city_List"></ul>
+
+<div id="city_FormUpdate">
+    <input type="hidden" id="hidden_cityID" value="" />
+    <input type="text" id="cityName_Update" placeholder="Ten Thanh Pho" />
+    <input type="button" id="btn_UpdateCity" value="Update" />
+    <input type="button" id="btn_DeleteCity" value="Delete" />
+
+</div>
+
+
+
+
+
+
